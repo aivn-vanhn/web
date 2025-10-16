@@ -14,7 +14,7 @@ export default function ContactSection() {
             Sẵn sàng hỗ trợ và tư vấn cho dự án của bạn
           </p>
         </div>
-        <div className="bg-gradient-to-br from-blue-50 to-pink-50 rounded-3xl shadow-2xl p-8 max-w-4xl mx-auto border-4 border-blue-300">
+        <div className="bg-gradient-to-br from-blue-50 to-pink-50 rounded-3xl shadow-2xl p-8 max-w-5xl mx-auto border-4 border-blue-300">
           <div className="grid md:grid-cols-2 gap-8">
             <div className="space-y-6">
               <div className="flex items-start space-x-4 p-6 rounded-2xl bg-white border-2 border-blue-200 hover:shadow-lg transition-all duration-300">
@@ -25,12 +25,9 @@ export default function ContactSection() {
                   <h4 className="text-xl font-bold text-blue-600 mb-3">
                     🏢 Địa chỉ
                   </h4>
-                  <p className="text-gray-700 text-lg">
-                    OF0310 - W1, Vinhomes Westpoint
-                    <br />
-                    Đường Đỗ Đức Dục, Phường Từ Liêm
-                    <br />
-                    Hà Nội
+                  <p className="text-gray-700 text-lg leading-tight">
+                    OF0310 - W1, Vinhomes Westpoint, Đường Đỗ Đức Dục, Phường Từ
+                    Liêm, Hà Nội
                   </p>
                 </div>
               </div>
@@ -60,7 +57,7 @@ export default function ContactSection() {
                   </h4>
                   <a
                     href="mailto:minhlenguyen.ceo@ai-vietnam.vn"
-                    className="text-gray-700 hover:text-blue-600 underline text-lg font-semibold"
+                    className="text-gray-700 hover:text-blue-600 underline text-lg font-semibold break-all"
                   >
                     minhlenguyen.ceo@ai-vietnam.vn
                   </a>

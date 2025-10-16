@@ -97,8 +97,15 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <head>
-        <link rel="icon" href="/images/logo_image.png" type="image/png" />
-        <link rel="apple-touch-icon" href="/images/logo_image.png" />
+        <link rel="icon" href="/images/huou.svg" type="image/svg+xml" />
+        <link
+          rel="icon"
+          href="/images/huou.svg"
+          type="image/svg+xml"
+          sizes="32x32"
+        />
+        <link rel="apple-touch-icon" href="/images/huou.svg" sizes="180x180" />
+        <link rel="shortcut icon" href="/images/huou.svg" />
         <meta name="theme-color" content="#3b82f6" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
