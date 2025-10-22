@@ -26,8 +26,8 @@ export default function ContactSection() {
                     🏢 Địa chỉ
                   </h4>
                   <p className="text-gray-700 text-lg leading-tight">
-                    OF0310 - W1, Vinhomes Westpoint, Đường Đỗ Đức Dục, Phường Từ
-                    Liêm, Hà Nội
+                    Căn OF0310 - W1, Vinhomes Westpoint, Đường Đỗ Đức Dục,
+                    Phường Từ Liêm, Hà Nội
                   </p>
                 </div>
               </div>
