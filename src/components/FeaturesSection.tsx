@@ -1,16 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import {
-  BookOpen,
-  Trophy,
-  Heart,
-  ArrowRight,
-  ChevronDown,
-  Sparkles,
-  Flame,
-  Check,
-} from "lucide-react";
+import { BookOpen, Trophy, Heart, ChevronDown, Check } from "lucide-react";
 
 export default function FeaturesSection() {
   const [isVisible, setIsVisible] = useState(false);
@@ -55,10 +46,6 @@ export default function FeaturesSection() {
 
     return () => clearInterval(interval);
   }, [isVisible]);
-
-  const handleStartLearning = () => {
-    window.open("https://examdee.ai-vietnam.vn", "_blank");
-  };
 
   const features = [
     {
