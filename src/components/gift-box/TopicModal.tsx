@@ -26,7 +26,7 @@ export function TopicModal({ isOpen, topic, onClose }: TopicModalProps) {
         <div className="px-6 pb-6 pt-8 text-center">
           <div className="flex justify-center mb-6">
             <img
-              src="/images/soccer-game/gift.svg"
+              src="/images/giftbox.png"
               alt="Gift box"
               className="w-32 h-32 object-contain drop-shadow-lg animate-zoom-in"
               style={{ animationDelay: "0.15s", animationFillMode: "both" }}

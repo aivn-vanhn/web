@@ -150,7 +150,7 @@ export function GiftBox({
             >
               {isHighlighted && !isOpened ? (
                 <GiftBoxWiggle
-                  src="/images/soccer-game/gift.svg"
+                  src="/images/giftbox.png"
                   alt="Gift box"
                   className="w-full h-full object-contain"
                   scale={1.2}
@@ -159,7 +159,7 @@ export function GiftBox({
                 />
               ) : (
                 <Image
-                  src="/images/soccer-game/gift.svg"
+                  src="/images/giftbox.png"
                   alt="Gift box"
                   width={160}
                   height={160}
@@ -195,7 +195,7 @@ export function GiftBox({
         <div className="relative min-h-[300px] flex flex-col items-center justify-center p-8 bg-white">
           <div className="flex justify-center mb-6">
             <GiftBoxWiggle
-              src="/images/soccer-game/gift.svg"
+              src="/images/giftbox.png"
               alt="Gift box"
               className="w-40 h-40 object-contain drop-shadow-2xl"
               scale={1.3}

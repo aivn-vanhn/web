@@ -2,7 +2,6 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect, useRef, useCallback } from "react";
-import Image from "next/image";
 import { GiftBox } from "@/components/gift-box/GiftBox";
 import { generateRandomTopics, type Topic, TOPICS } from "@/lib/topics";
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,7 @@ import {
   RocketLaunchIcon,
   ArrowUUpLeftIcon,
   ArrowsClockwiseIcon,
+  DotsThreeVerticalIcon,
 } from "@phosphor-icons/react";
 
 const SHUFFLE_STEPS = 5;
@@ -35,7 +35,7 @@ function NotFoundPage() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-[url('/images/bg-game-rule.svg')] bg-cover bg-center py-12 px-4 flex items-center justify-center">
+    <div className="min-h-screen bg-[url('/images/background.png')] bg-cover bg-center py-12 px-4 flex items-center justify-center">
       <div className="text-center">
         <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
           Not Found
@@ -61,9 +61,11 @@ export default function ToolsPage() {
   const [hasStarted, setHasStarted] = useState(false);
   const [topics, setTopics] = useState<TopicWithSelected[]>([]);
   const [highlightedBoxId, setHighlightedBoxId] = useState<string | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const shuffleIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const highlightTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const highlightIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const isStarted = !isShuffling && hasStarted;
   const selectedCount = topics.filter((t) => t?.selected).length;
@@ -109,6 +111,22 @@ export default function ToolsPage() {
       cleanupHighlightTimeout();
     };
   }, [flag, cleanupInterval, cleanupHighlightTimeout, initializeTopics]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    if (isMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isMenuOpen]);
 
   const handleStart = useCallback(() => {
     const initialTopics =
@@ -235,91 +253,113 @@ export default function ToolsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[url('/images/bg-game-rule.svg')] bg-cover bg-center py-4 px-4 sm:py-6 md:py-4 md:px-6 lg:px-8 relative">
-      <div className="absolute inset-0 bg-black/20"></div>
+    <div className="min-h-screen bg-[url('/images/background.png')] bg-cover bg-center py-4 px-4 sm:py-6 md:py-4 md:px-6 lg:px-8 relative">
       <div className="relative z-10">
-        <div className="relative">
-          <div className="absolute left-0 top-0 pt-2 sm:pt-3 md:pt-2 lg:pt-4">
-            <Image
+        <div className="relative z-20">
+          <div className="absolute left-0 top-0 pt-4 sm:pt-5 md:pt-4 lg:pt-6 z-30">
+            <img
               src="/images/examdee.png"
               alt="Examdee Logo"
-              width={120}
-              height={48}
-              className="h-6 sm:h-8 md:h-8 lg:h-12 w-auto object-contain ml-2 sm:ml-4 md:ml-4 lg:ml-8"
-              priority
+              className="h-6 sm:h-8 md:h-9 lg:h-12 w-auto object-contain ml-4 sm:ml-6 md:ml-6 lg:ml-8"
             />
           </div>
-          <div className="absolute right-0 top-0 pt-2 sm:pt-3 md:pt-2 lg:pt-4">
-            <Image
-              src="/images/AIVN.png"
+          <div className="absolute right-0 top-0 pt-4 sm:pt-5 md:pt-4 lg:pt-6 z-30 mr-4 sm:mr-6 md:mr-6 lg:mr-8 flex items-center gap-3 sm:gap-4">
+            <img
+              src="/images/aivn_logo.svg"
               alt="AIVN Logo"
-              width={70}
-              height={24}
-              className="h-3 sm:h-4 md:h-5 lg:h-7 w-auto object-contain mr-2 sm:mr-4 md:mr-4 lg:mr-8"
-              priority
+              className="h-6 sm:h-7 md:h-8 lg:h-10 w-auto object-contain"
             />
+            <div ref={menuRef} className="relative">
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="p-2 sm:p-2.5 rounded-lg bg-white/15 hover:bg-white/25 transition-colors"
+                aria-label="Menu"
+              >
+                <DotsThreeVerticalIcon
+                  className="w-5 h-5 sm:w-6 sm:h-6 text-white"
+                  weight="bold"
+                />
+              </button>
+              {isMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 sm:w-56 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50">
+                  {!hasStarted ? (
+                    <button
+                      onClick={() => {
+                        handleStart();
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full px-5 py-3 text-left hover:bg-gray-50 flex items-center gap-3 text-gray-900 font-semibold text-base sm:text-lg"
+                    >
+                      <RocketLaunchIcon
+                        className="w-5 h-5 sm:w-6 sm:h-6"
+                        weight="bold"
+                      />
+                      <span>Bắt đầu</span>
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => {
+                          handleUndo();
+                          setIsMenuOpen(false);
+                        }}
+                        disabled={selectedCount === 0}
+                        className="w-full px-5 py-3 text-left hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 text-gray-900 font-semibold text-base sm:text-lg"
+                      >
+                        <ArrowUUpLeftIcon
+                          className="w-5 h-5 sm:w-6 sm:h-6"
+                          weight="bold"
+                        />
+                        <span>Hoàn tác</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleReset();
+                          setIsMenuOpen(false);
+                        }}
+                        disabled={isShuffling}
+                        className="w-full px-5 py-3 text-left hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 text-gray-900 font-semibold text-base sm:text-lg border-t border-gray-200"
+                      >
+                        <ArrowsClockwiseIcon
+                          className="w-5 h-5 sm:w-6 sm:h-6"
+                          weight="bold"
+                        />
+                        <span>Đặt lại</span>
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-3 sm:mb-4 md:mb-4 pt-10 sm:pt-12 md:pt-10 lg:pt-12">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-1.5 sm:mb-2 md:mb-2 drop-shadow-lg">
-              Explore Topics
+          <div className="text-center mb-10 sm:mb-12 md:mb-14 pt-20 sm:pt-24 md:pt-22 lg:pt-24">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-extrabold text-white mb-5 sm:mb-6 md:mb-7 drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)] whitespace-nowrap leading-normal">
+              BỐC THĂM CHỦ ĐỀ THUYẾT TRÌNH
             </h1>
-            <p className="text-base sm:text-lg md:text-xl text-white mb-2 sm:mb-3 md:mb-3 font-semibold drop-shadow-md">
-              {isStarted
-                ? "Choose a gift box to discover a new topic!"
-                : "Click Start to begin exploring!"}
+            <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl text-white mb-10 sm:mb-12 md:mb-14 font-bold drop-shadow-[0_2px_6px_rgba(0,0,0,0.3)]">
+              PHẦN 3: THUYẾT TRÌNH TIẾNG ANH
             </p>
             {!hasStarted && (
               <Button
                 onClick={handleStart}
                 variant="primary"
                 size="xl"
-                className="text-xl sm:text-2xl md:text-2xl px-12 sm:px-16 md:px-16 py-6 sm:py-7 md:py-7 font-bold gap-2 sm:gap-3"
+                className="text-xl sm:text-2xl md:text-3xl px-14 sm:px-16 md:px-20 py-7 sm:py-8 md:py-9 font-extrabold gap-4 shadow-lg"
               >
-                Start
+                Bắt đầu
                 <RocketLaunchIcon
-                  className="w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20"
+                  className="w-8 h-8 sm:w-9 sm:h-9 md:w-11 md:h-11"
                   weight="bold"
                 />
               </Button>
             )}
           </div>
 
-          {hasStarted && (
-            <div className="flex justify-center gap-3 sm:gap-4 mb-4 sm:mb-5 md:mb-6">
-              <Button
-                onClick={handleUndo}
-                variant="secondary"
-                size="lg"
-                disabled={selectedCount === 0}
-                className="px-10 sm:px-12 md:px-12 py-5 sm:py-6 md:py-6 text-lg sm:text-xl md:text-xl font-bold gap-2"
-              >
-                <ArrowUUpLeftIcon
-                  className="w-7 h-7 sm:w-9 sm:h-9 md:w-9 md:h-9"
-                  weight="bold"
-                />
-                Undo
-              </Button>
-              <Button
-                onClick={handleReset}
-                variant="secondary"
-                size="lg"
-                disabled={isShuffling}
-                className="px-10 sm:px-12 md:px-12 py-5 sm:py-6 md:py-6 text-lg sm:text-xl md:text-xl font-bold gap-2"
-              >
-                <ArrowsClockwiseIcon
-                  className="w-7 h-7 sm:w-9 sm:h-9 md:w-9 md:h-9"
-                  weight="bold"
-                />
-                Reset
-              </Button>
-            </div>
-          )}
-
           {hasStarted && hasValidTopics && (
-            <div className="relative grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-5 md:gap-5 lg:gap-6 mt-2 sm:mt-3 md:mt-3">
+            <div className="relative grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-5 md:gap-6 lg:gap-8">
               {topics.map((topic) => (
                 <GiftBox
                   key={topic.id}
