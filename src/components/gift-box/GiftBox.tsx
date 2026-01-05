@@ -135,7 +135,7 @@ export function GiftBox({
             onClick={onClick}
             disabled={!isStarted || isOpened}
             className={cn(
-              "relative w-full aspect-square max-w-[85px] sm:max-w-[100px] md:max-w-[110px] lg:max-w-[130px] mx-auto",
+              "relative w-full aspect-square max-w-[100px] sm:max-w-[120px] md:max-w-[130px] lg:max-w-[150px] mx-auto",
               (!isStarted || isOpened) && "opacity-60 cursor-default",
               isStarted &&
                 !isOpened &&
@@ -191,23 +191,34 @@ export function GiftBox({
         </DialogTrigger>
       </div>
 
-      <DialogContent className="max-w-md animate-modal-zoom-in">
-        <div className="relative min-h-[300px] flex flex-col items-center justify-center p-8 bg-white">
-          <div className="flex justify-center mb-6">
-            <GiftBoxWiggle
-              src="/images/giftbox.png"
-              alt="Gift box"
-              className="w-40 h-40 object-contain drop-shadow-2xl"
-              scale={1.3}
-              maxRotate={15}
-            />
-          </div>
-          <DialogTitle className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4 text-center animate-slide-up drop-shadow-md">
+      <DialogContent className="max-w-3xl animate-modal-zoom-in">
+        <div className="relative flex flex-col items-center justify-center p-8 sm:p-10 md:p-12 bg-white">
+          <DialogTitle className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-6 sm:mb-8 text-center animate-slide-up drop-shadow-md">
             {topic.title}
           </DialogTitle>
           <DialogDescription className="sr-only">
             Bạn đã khám phá chủ đề: {topic.title}
           </DialogDescription>
+          {topic.questions && topic.questions.length > 0 && (
+            <div
+              className={cn(
+                "rounded-xl p-6 sm:p-8 md:p-10 border-2 w-full animate-slide-up space-y-4"
+              )}
+              style={{
+                backgroundImage: `linear-gradient(to bottom right, ${topic.theme.gradientFrom}, ${topic.theme.gradientTo})`,
+                borderColor: topic.theme.border,
+              }}
+            >
+              {topic.questions.map((question, index) => (
+                <p
+                  key={index}
+                  className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-800 leading-relaxed text-center"
+                >
+                  {question}
+                </p>
+              ))}
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

@@ -10,11 +10,28 @@ import {
   ArrowUUpLeftIcon,
   ArrowsClockwiseIcon,
   DotsThreeVerticalIcon,
+  ArrowsOutIcon,
+  ArrowsInIcon,
 } from "@phosphor-icons/react";
 
 const SHUFFLE_STEPS = 5;
 const SHUFFLE_DURATION = 1000;
 const TOPICS_COUNT = 16;
+
+interface FullscreenElement extends HTMLElement {
+  webkitRequestFullscreen?: () => Promise<void>;
+  mozRequestFullScreen?: () => Promise<void>;
+  msRequestFullscreen?: () => Promise<void>;
+}
+
+interface FullscreenDocument extends Document {
+  webkitExitFullscreen?: () => Promise<void>;
+  mozCancelFullScreen?: () => Promise<void>;
+  msExitFullscreen?: () => Promise<void>;
+  webkitFullscreenElement?: Element | null;
+  mozFullScreenElement?: Element | null;
+  msFullscreenElement?: Element | null;
+}
 
 type TopicWithSelected = Topic & {
   selected: boolean;
@@ -62,6 +79,7 @@ export default function ToolsPage() {
   const [topics, setTopics] = useState<TopicWithSelected[]>([]);
   const [highlightedBoxId, setHighlightedBoxId] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const shuffleIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const highlightTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const highlightIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -128,7 +146,83 @@ export default function ToolsPage() {
     };
   }, [isMenuOpen]);
 
-  const handleStart = useCallback(() => {
+  const enterFullscreen = useCallback(async () => {
+    try {
+      const element = document.documentElement as FullscreenElement;
+      if (element.requestFullscreen) {
+        await element.requestFullscreen();
+        setIsFullscreen(true);
+      } else if (element.webkitRequestFullscreen) {
+        await element.webkitRequestFullscreen();
+        setIsFullscreen(true);
+      } else if (element.mozRequestFullScreen) {
+        await element.mozRequestFullScreen();
+        setIsFullscreen(true);
+      } else if (element.msRequestFullscreen) {
+        await element.msRequestFullscreen();
+        setIsFullscreen(true);
+      }
+    } catch (error) {
+      console.error("Error entering fullscreen:", error);
+    }
+  }, []);
+
+  const exitFullscreen = useCallback(async () => {
+    try {
+      const doc = document as FullscreenDocument;
+      if (doc.exitFullscreen) {
+        await doc.exitFullscreen();
+        setIsFullscreen(false);
+      } else if (doc.webkitExitFullscreen) {
+        await doc.webkitExitFullscreen();
+        setIsFullscreen(false);
+      } else if (doc.mozCancelFullScreen) {
+        await doc.mozCancelFullScreen();
+        setIsFullscreen(false);
+      } else if (doc.msExitFullscreen) {
+        await doc.msExitFullscreen();
+        setIsFullscreen(false);
+      }
+    } catch (error) {
+      console.error("Error exiting fullscreen:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const doc = document as FullscreenDocument;
+      const isCurrentlyFullscreen = !!(
+        doc.fullscreenElement ||
+        doc.webkitFullscreenElement ||
+        doc.mozFullScreenElement ||
+        doc.msFullscreenElement
+      );
+      setIsFullscreen(isCurrentlyFullscreen);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener(
+        "webkitfullscreenchange",
+        handleFullscreenChange
+      );
+      document.removeEventListener(
+        "mozfullscreenchange",
+        handleFullscreenChange
+      );
+      document.removeEventListener(
+        "MSFullscreenChange",
+        handleFullscreenChange
+      );
+    };
+  }, []);
+
+  const handleStart = useCallback(async () => {
     const initialTopics =
       topics.length === TOPICS_COUNT ? topics : initializeTopics();
     const topicsWithIndexes = initialTopics.map((topic, index) => ({
@@ -140,6 +234,8 @@ export default function ToolsPage() {
     setTopics(topicsWithIndexes);
     setHasStarted(true);
     setIsShuffling(true);
+
+    await enterFullscreen();
 
     let shuffleCount = 0;
     const interval = SHUFFLE_DURATION / SHUFFLE_STEPS;
@@ -164,7 +260,7 @@ export default function ToolsPage() {
         setIsShuffling(false);
       }
     }, interval);
-  }, [cleanupInterval, topics, initializeTopics]);
+  }, [cleanupInterval, topics, initializeTopics, enterFullscreen]);
 
   // Show random gift box wiggle after 5s, then every 2s if user hasn't selected any box
   useEffect(() => {
@@ -246,7 +342,24 @@ export default function ToolsPage() {
     setHighlightedBoxId(null);
     cleanupInterval();
     cleanupHighlightTimeout();
+    // Note: Reset does NOT exit fullscreen
   }, [cleanupInterval, cleanupHighlightTimeout, initializeTopics]);
+
+  const handleToggleFullscreen = useCallback(async () => {
+    const doc = document as FullscreenDocument;
+    const isCurrentlyFullscreen = !!(
+      doc.fullscreenElement ||
+      doc.webkitFullscreenElement ||
+      doc.mozFullScreenElement ||
+      doc.msFullscreenElement
+    );
+
+    if (isCurrentlyFullscreen) {
+      await exitFullscreen();
+    } else {
+      await enterFullscreen();
+    }
+  }, [enterFullscreen, exitFullscreen]);
 
   if (flag !== "random") {
     return <NotFoundPage />;
@@ -326,6 +439,31 @@ export default function ToolsPage() {
                         />
                         <span>Đặt lại</span>
                       </button>
+                      <button
+                        onClick={() => {
+                          handleToggleFullscreen();
+                          setIsMenuOpen(false);
+                        }}
+                        disabled={isShuffling}
+                        className="w-full px-5 py-3 text-left hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 text-gray-900 font-semibold text-base sm:text-lg border-t border-gray-200"
+                      >
+                        {isFullscreen ? (
+                          <ArrowsInIcon
+                            className="w-5 h-5 sm:w-6 sm:h-6"
+                            weight="bold"
+                          />
+                        ) : (
+                          <ArrowsOutIcon
+                            className="w-5 h-5 sm:w-6 sm:h-6"
+                            weight="bold"
+                          />
+                        )}
+                        <span>
+                          {isFullscreen
+                            ? "Thoát toàn màn hình"
+                            : "Toàn màn hình"}
+                        </span>
+                      </button>
                     </>
                   )}
                 </div>
@@ -340,7 +478,7 @@ export default function ToolsPage() {
               BỐC THĂM CHỦ ĐỀ THUYẾT TRÌNH
             </h1>
             <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl text-white mb-10 sm:mb-12 md:mb-14 font-bold drop-shadow-[0_2px_6px_rgba(0,0,0,0.3)]">
-              PHẦN 3: THUYẾT TRÌNH TIẾNG ANH
+              PLEASE SPEAK - THUYẾT TRÌNH TIẾNG ANH
             </p>
             {!hasStarted && (
               <Button

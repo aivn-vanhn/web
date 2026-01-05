@@ -3,7 +3,7 @@ import { MOCK_TOPICS } from "./mockTopics";
 export interface Topic {
   id: string;
   title: string;
-  description: string;
+  questions: string[];
   theme: {
     primary: string;
     secondary: string;

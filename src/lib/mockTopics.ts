@@ -1,7 +1,7 @@
 export interface Topic {
   id: string;
   title: string;
-  description: string;
+  questions: string[];
   theme: {
     primary: string;
     secondary: string;
@@ -15,8 +15,7 @@ export const MOCK_TOPICS: Topic[] = [
   {
     id: "659242b1-58f7-4c5c-99d3-2917f1fd4951",
     title: "School",
-    description:
-      "Explore topics related to school, education, and learning environments.",
+    questions: ["What is your favourite place to study?"],
     theme: {
       primary: "#3B82F6",
       secondary: "#2563EB",
@@ -28,8 +27,7 @@ export const MOCK_TOPICS: Topic[] = [
   {
     id: "0f182a9d-fb71-4fe0-a055-d73c6b3b777d",
     title: "Study",
-    description:
-      "Learn about effective study methods, techniques, and academic success.",
+    questions: ["How do you usually study or prepare for exams?"],
     theme: {
       primary: "#8B5CF6",
       secondary: "#7C3AED",
@@ -41,8 +39,7 @@ export const MOCK_TOPICS: Topic[] = [
   {
     id: "fa0e505e-2e05-4637-8525-6235efba7d9d",
     title: "Fire Safety",
-    description:
-      "Important safety information about fire prevention and emergency procedures.",
+    questions: ["What should students do to help prevent a fire at school?"],
     theme: {
       primary: "#EF4444",
       secondary: "#DC2626",
@@ -54,8 +51,7 @@ export const MOCK_TOPICS: Topic[] = [
   {
     id: "4710ec29-893e-4559-9de7-ef3128b76213",
     title: "Environment",
-    description:
-      "Discover ways to protect our planet and understand environmental issues.",
+    questions: ["How does technology help us protect the environment?"],
     theme: {
       primary: "#10B981",
       secondary: "#059669",
@@ -67,8 +63,9 @@ export const MOCK_TOPICS: Topic[] = [
   {
     id: "1092115f-1230-482c-b9da-a8878be480cf",
     title: "E-Learning",
-    description:
-      "Explore digital learning platforms and online education opportunities.",
+    questions: [
+      "Which method of learning is helpful for students, online or in-person classes?",
+    ],
     theme: {
       primary: "#06B6D4",
       secondary: "#0891B2",
@@ -80,8 +77,7 @@ export const MOCK_TOPICS: Topic[] = [
   {
     id: "2b4c8d03-a634-4dcc-972f-5d36e476a35a",
     title: "Outdoor activities",
-    description:
-      "Enjoy nature, sports, and outdoor adventures for a healthy lifestyle.",
+    questions: ["How do outdoor activities help us improve our health?"],
     theme: {
       primary: "#F59E0B",
       secondary: "#D97706",
@@ -93,8 +89,7 @@ export const MOCK_TOPICS: Topic[] = [
   {
     id: "d7d11ab5-9ecd-481e-a3c9-8757d8f7d62c",
     title: "Technology",
-    description:
-      "Stay updated with the latest technological innovations and trends.",
+    questions: ["How do robots help people at work?"],
     theme: {
       primary: "#6366F1",
       secondary: "#4F46E5",
@@ -106,8 +101,7 @@ export const MOCK_TOPICS: Topic[] = [
   {
     id: "5b0f3b3e-a779-467d-a8e0-fba52ff82114",
     title: "Future Jobs",
-    description:
-      "Learn about career opportunities and skills needed for tomorrow's workforce.",
+    questions: ["What is your dream job when you grow up?"],
     theme: {
       primary: "#EC4899",
       secondary: "#DB2777",
@@ -119,8 +113,7 @@ export const MOCK_TOPICS: Topic[] = [
   {
     id: "396b4674-74ca-4408-be71-8ac08a4f1af9",
     title: "Holidays",
-    description:
-      "Celebrate and learn about different holidays and traditions around the world.",
+    questions: ["How do Vietnamese people celebrate public holidays?"],
     theme: {
       primary: "#F97316",
       secondary: "#EA580C",
@@ -132,8 +125,9 @@ export const MOCK_TOPICS: Topic[] = [
   {
     id: "c8844978-e78f-402d-bb70-4d26e2ef4abb",
     title: "Family",
-    description:
-      "Understand family relationships, values, and the importance of family bonds.",
+    questions: [
+      "Can you describe a special time that you spent with your family?",
+    ],
     theme: {
       primary: "#14B8A6",
       secondary: "#0D9488",
@@ -145,8 +139,9 @@ export const MOCK_TOPICS: Topic[] = [
   {
     id: "6ebb72a1-dd3b-4832-80f1-9798643a40e9",
     title: "Friend",
-    description:
-      "Build meaningful friendships and learn about social connections.",
+    questions: [
+      "Is it better to have lots of friends or just a few close friends? Why?",
+    ],
     theme: {
       primary: "#A855F7",
       secondary: "#9333EA",
@@ -158,8 +153,7 @@ export const MOCK_TOPICS: Topic[] = [
   {
     id: "84e549c2-5c1a-4089-b363-d7e2f3516ce1",
     title: "Music",
-    description:
-      "Explore different music genres, instruments, and musical expressions.",
+    questions: ["Tell about studying music at school."],
     theme: {
       primary: "#8B5CF6",
       secondary: "#7C3AED",
@@ -171,8 +165,7 @@ export const MOCK_TOPICS: Topic[] = [
   {
     id: "8744fdd8-3446-4afa-b201-9af9783c5234",
     title: "Sport",
-    description:
-      "Stay active and learn about various sports, fitness, and healthy competition.",
+    questions: ["Describe a live sport event you've watched before."],
     theme: {
       primary: "#EF4444",
       secondary: "#DC2626",
@@ -184,8 +177,9 @@ export const MOCK_TOPICS: Topic[] = [
   {
     id: "b38a1bf9-2d1d-4b64-a366-3b6114c530cc",
     title: "Weather",
-    description:
-      "Understand weather patterns, climate, and how weather affects our daily lives.",
+    questions: [
+      "What's your favorite type of weather? Do you like sunny days or rainy days more?",
+    ],
     theme: {
       primary: "#0EA5E9",
       secondary: "#0284C7",
@@ -197,8 +191,9 @@ export const MOCK_TOPICS: Topic[] = [
   {
     id: "70ac4dc7-9744-4910-9b82-9c79bb0495b0",
     title: "Travel",
-    description:
-      "Discover new places, cultures, and adventures through travel experiences.",
+    questions: [
+      "What do you like to do during your travels? Do you prefer going to cities or exploring natural landscapes?",
+    ],
     theme: {
       primary: "#06B6D4",
       secondary: "#0891B2",
@@ -210,8 +205,9 @@ export const MOCK_TOPICS: Topic[] = [
   {
     id: "6d05e48d-6d67-4a14-b762-5699d14d3257",
     title: "Clothes",
-    description:
-      "Learn about fashion, clothing styles, and dressing for different occasions.",
+    questions: [
+      "What kind of clothes do you like to wear? Is it a good idea to buy clothes online?",
+    ],
     theme: {
       primary: "#EC4899",
       secondary: "#DB2777",
