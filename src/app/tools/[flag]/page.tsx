@@ -17,6 +17,8 @@ import {
 const SHUFFLE_STEPS = 5;
 const SHUFFLE_DURATION = 1000;
 const TOPICS_COUNT = 16;
+const HIGHLIGHT_DELAY = 5000;
+const HIGHLIGHT_INTERVAL = 2000;
 
 interface FullscreenElement extends HTMLElement {
   webkitRequestFullscreen?: () => Promise<void>;
@@ -114,7 +116,7 @@ export default function ToolsPage() {
       return {
         ...topic,
         selected: false,
-        initialIndex: originalIndex >= 0 ? originalIndex : index,
+        initialIndex: originalIndex >= 0 ? originalIndex : index % TOPICS_COUNT,
         currentIndex: index,
       };
     });
@@ -151,16 +153,12 @@ export default function ToolsPage() {
       const element = document.documentElement as FullscreenElement;
       if (element.requestFullscreen) {
         await element.requestFullscreen();
-        setIsFullscreen(true);
       } else if (element.webkitRequestFullscreen) {
         await element.webkitRequestFullscreen();
-        setIsFullscreen(true);
       } else if (element.mozRequestFullScreen) {
         await element.mozRequestFullScreen();
-        setIsFullscreen(true);
       } else if (element.msRequestFullscreen) {
         await element.msRequestFullscreen();
-        setIsFullscreen(true);
       }
     } catch (error) {
       console.error("Error entering fullscreen:", error);
@@ -172,16 +170,12 @@ export default function ToolsPage() {
       const doc = document as FullscreenDocument;
       if (doc.exitFullscreen) {
         await doc.exitFullscreen();
-        setIsFullscreen(false);
       } else if (doc.webkitExitFullscreen) {
         await doc.webkitExitFullscreen();
-        setIsFullscreen(false);
       } else if (doc.mozCancelFullScreen) {
         await doc.mozCancelFullScreen();
-        setIsFullscreen(false);
       } else if (doc.msExitFullscreen) {
         await doc.msExitFullscreen();
-        setIsFullscreen(false);
       }
     } catch (error) {
       console.error("Error exiting fullscreen:", error);
@@ -200,25 +194,20 @@ export default function ToolsPage() {
       setIsFullscreen(isCurrentlyFullscreen);
     };
 
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
-    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
-    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
+    const events = [
+      "fullscreenchange",
+      "webkitfullscreenchange",
+      "mozfullscreenchange",
+      "MSFullscreenChange",
+    ];
+    events.forEach((event) => {
+      document.addEventListener(event, handleFullscreenChange);
+    });
 
     return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      document.removeEventListener(
-        "webkitfullscreenchange",
-        handleFullscreenChange
-      );
-      document.removeEventListener(
-        "mozfullscreenchange",
-        handleFullscreenChange
-      );
-      document.removeEventListener(
-        "MSFullscreenChange",
-        handleFullscreenChange
-      );
+      events.forEach((event) => {
+        document.removeEventListener(event, handleFullscreenChange);
+      });
     };
   }, []);
 
@@ -233,36 +222,54 @@ export default function ToolsPage() {
 
     setTopics(topicsWithIndexes);
     setHasStarted(true);
-    setIsShuffling(true);
 
+    // Enter fullscreen first, then wait for layout to stabilize before starting shuffle
     await enterFullscreen();
+
+    // Wait for fullscreen transition and layout recalculation to complete
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    setIsShuffling(true);
 
     let shuffleCount = 0;
     const interval = SHUFFLE_DURATION / SHUFFLE_STEPS;
 
     shuffleIntervalRef.current = setInterval(() => {
       shuffleCount++;
+      const isLastShuffle = shuffleCount >= SHUFFLE_STEPS;
+
       setTopics((prev) => {
         const shuffled = shuffleArray(prev);
         const newPositionMap = new Map(
           shuffled.map((topic, index) => [topic.id, index])
         );
 
-        return prev.map((topic) => ({
+        const updated = prev.map((topic) => ({
           ...topic,
           selected: false,
           currentIndex: newPositionMap.get(topic.id) ?? topic.currentIndex,
         }));
+
+        if (isLastShuffle) {
+          const sorted = [...updated].sort(
+            (a, b) => a.currentIndex - b.currentIndex
+          );
+          return sorted.map((topic, index) => ({
+            ...topic,
+            initialIndex: index,
+          }));
+        }
+
+        return updated;
       });
 
-      if (shuffleCount >= SHUFFLE_STEPS) {
+      if (isLastShuffle) {
         cleanupInterval();
         setIsShuffling(false);
       }
     }, interval);
   }, [cleanupInterval, topics, initializeTopics, enterFullscreen]);
 
-  // Show random gift box wiggle after 5s, then every 2s if user hasn't selected any box
   useEffect(() => {
     if (!isStarted || isShuffling || selectedCount > 0) {
       cleanupHighlightTimeout();
@@ -279,15 +286,12 @@ export default function ToolsPage() {
       }
     };
 
-    // First timeout: 5s
     highlightTimeoutRef.current = setTimeout(() => {
       showRandomWiggle();
-
-      // Then set interval: every 2s
       highlightIntervalRef.current = setInterval(() => {
         showRandomWiggle();
-      }, 2000);
-    }, 5000);
+      }, HIGHLIGHT_INTERVAL);
+    }, HIGHLIGHT_DELAY);
 
     return () => {
       cleanupHighlightTimeout();
@@ -365,7 +369,7 @@ export default function ToolsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[url('/images/background.png')] bg-cover bg-center py-4 px-4 sm:py-6 md:py-4 md:px-6 lg:px-8 relative">
+    <div className="min-h-screen bg-[url('/images/background.png')] bg-cover bg-center py-4 px-4 sm:py-6 md:py-4 md:px-8 lg:px-8 relative">
       <div className="relative z-10">
         <div className="relative z-20">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 pt-4 sm:pt-5 md:pt-4 lg:pt-6 z-30 flex flex-row items-center gap-6 sm:gap-8 md:gap-10 lg:gap-12 xl:gap-14">
@@ -396,7 +400,7 @@ export default function ToolsPage() {
           </div>
           <div
             ref={menuRef}
-            className="absolute top-4 sm:top-5 md:top-4 lg:top-6 right-4 sm:right-6 md:right-6 lg:right-8 z-30"
+            className="absolute top-4 sm:top-5 md:top-4 lg:top-6 right-4 sm:right-6 md:right-8 lg:right-8 z-30"
           >
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -411,19 +415,43 @@ export default function ToolsPage() {
             {isMenuOpen && (
               <div className="absolute right-0 mt-2 w-48 sm:w-56 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50">
                 {!hasStarted ? (
-                  <button
-                    onClick={() => {
-                      handleStart();
-                      setIsMenuOpen(false);
-                    }}
-                    className="w-full px-5 py-3 text-left hover:bg-gray-50 flex items-center gap-3 text-gray-900 font-semibold text-base sm:text-lg"
-                  >
-                    <RocketLaunchIcon
-                      className="w-5 h-5 sm:w-6 sm:h-6"
-                      weight="bold"
-                    />
-                    <span>Bắt đầu</span>
-                  </button>
+                  <>
+                    <button
+                      onClick={() => {
+                        handleStart();
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full px-5 py-3 text-left hover:bg-gray-50 flex items-center gap-3 text-gray-900 font-semibold text-base sm:text-lg"
+                    >
+                      <RocketLaunchIcon
+                        className="w-5 h-5 sm:w-6 sm:h-6"
+                        weight="bold"
+                      />
+                      <span>Bắt đầu</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleToggleFullscreen();
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full px-5 py-3 text-left hover:bg-gray-50 flex items-center gap-3 text-gray-900 font-semibold text-base sm:text-lg border-t border-gray-200"
+                    >
+                      {isFullscreen ? (
+                        <ArrowsInIcon
+                          className="w-5 h-5 sm:w-6 sm:h-6"
+                          weight="bold"
+                        />
+                      ) : (
+                        <ArrowsOutIcon
+                          className="w-5 h-5 sm:w-6 sm:h-6"
+                          weight="bold"
+                        />
+                      )}
+                      <span>
+                        {isFullscreen ? "Thoát toàn màn hình" : "Toàn màn hình"}
+                      </span>
+                    </button>
+                  </>
                 ) : (
                   <>
                     <button
@@ -484,9 +512,9 @@ export default function ToolsPage() {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-6 sm:mb-8 md:mb-10 lg:mb-12 pt-20 sm:pt-24 md:pt-48 lg:pt-52 xl:pt-56">
-            <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold text-white mb-2 sm:mb-3 md:mb-4 lg:mb-5 drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] whitespace-nowrap leading-normal px-4 sm:px-6 md:px-8">
+        <div className="w-full max-w-7xl mx-auto">
+          <div className="text-center mb-6 sm:mb-8 md:mb-10 lg:mb-12 pt-20 sm:pt-24 md:pt-48 lg:pt-52 xl:pt-56 mx-auto">
+            <p className="text-base sm:text-lg md:text-lg lg:text-2xl xl:text-3xl font-bold text-white mb-2 sm:mb-3 md:mb-4 lg:mb-5 drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] whitespace-nowrap leading-normal px-4 sm:px-6 md:px-8">
               BỐC THĂM CHỦ ĐỀ PHẦN 3: PLEASE SPEAK - THUYẾT TRÌNH TIẾNG ANH
             </p>
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-white mb-1.5 sm:mb-2 md:mb-3 lg:mb-4 drop-shadow-[0_5px_15px_rgba(0,0,0,0.9)] whitespace-nowrap leading-normal px-4 sm:px-6 md:px-8">

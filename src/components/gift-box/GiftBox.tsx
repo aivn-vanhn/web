@@ -2,7 +2,6 @@
 
 import { cn } from "@/lib/utils";
 import type { Topic } from "@/lib/topics";
-import Image from "next/image";
 import {
   Dialog,
   DialogContent,
@@ -59,6 +58,12 @@ export function GiftBox({
   const frameRef = useRef<number | undefined>(undefined);
   const startRef = useRef<number>(0);
 
+  const TRANSITION_DURATION = "0.3s";
+  const RESET_TRANSFORM = "translateY(0.25rem) scale(1) rotate(0deg)";
+  const WIGGLE_DURATION = 1000;
+  const WIGGLE_MAX_ROTATE = 15;
+  const WIGGLE_SCALE = 1.2;
+
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -68,10 +73,11 @@ export function GiftBox({
     if (!gridContainer) return;
 
     if (!isShuffling) {
-      containerRef.current.style.transform = "";
-      containerRef.current.style.boxShadow = "";
-      containerRef.current.style.outline = "";
-      containerRef.current.style.transition =
+      const container = containerRef.current;
+      container.style.transform = "";
+      container.style.boxShadow = "";
+      container.style.outline = "";
+      container.style.transition =
         "transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1)";
       return;
     }
@@ -122,39 +128,48 @@ export function GiftBox({
   useEffect(() => {
     const numberElement = numberRef.current;
     if (!numberElement || !isHighlighted || isOpened) {
-      if (frameRef.current) {
+      if (frameRef.current !== undefined) {
         cancelAnimationFrame(frameRef.current);
+        frameRef.current = undefined;
       }
       if (numberElement) {
-        numberElement.style.transform =
-          "translateY(0.25rem) scale(1) rotate(0deg)";
-        numberElement.style.transition = "";
+        numberElement.style.transition = `transform ${TRANSITION_DURATION} ease-out`;
+        numberElement.style.transform = RESET_TRANSFORM;
       }
+      startRef.current = 0;
       return;
     }
 
-    const duration = 1000;
-    const maxRotate = 15;
-    const scale = 1.2;
+    if (frameRef.current !== undefined) {
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = undefined;
+    }
+
+    const resetTransform = () => {
+      numberElement.style.transition = `transform ${TRANSITION_DURATION} ease-out`;
+      numberElement.style.transform = RESET_TRANSFORM;
+    };
 
     const animate = (time: number) => {
-      if (!startRef.current) startRef.current = time;
+      if (startRef.current === 0) {
+        startRef.current = time;
+      }
       const elapsed = time - startRef.current;
 
-      if (elapsed >= duration) {
-        numberElement.style.transform =
-          "translateY(0.25rem) scale(1) rotate(0deg)";
-        numberElement.style.transition = "transform 0.2s ease-out";
+      if (elapsed >= WIGGLE_DURATION) {
+        resetTransform();
+        frameRef.current = undefined;
+        startRef.current = 0;
         return;
       }
 
-      const progress = elapsed / duration;
-      const deg = Math.sin(elapsed / 80) * maxRotate * (1 - progress);
+      const progress = elapsed / WIGGLE_DURATION;
+      const deg = Math.sin(elapsed / 80) * WIGGLE_MAX_ROTATE * (1 - progress);
       const sc =
-        1 + Math.sin(elapsed / 100) * (scale - 1) * 0.3 * (1 - progress);
-      numberElement.style.transform = `translateY(0.25rem) scale(${sc}) rotate(${deg}deg)`;
-      numberElement.style.transition = "none";
+        1 + Math.sin(elapsed / 100) * (WIGGLE_SCALE - 1) * 0.3 * (1 - progress);
 
+      numberElement.style.transition = "none";
+      numberElement.style.transform = `translateY(0.25rem) scale(${sc}) rotate(${deg}deg)`;
       frameRef.current = requestAnimationFrame(animate);
     };
 
@@ -162,14 +177,14 @@ export function GiftBox({
     frameRef.current = requestAnimationFrame(animate);
 
     return () => {
-      if (frameRef.current) {
+      if (frameRef.current !== undefined) {
         cancelAnimationFrame(frameRef.current);
+        frameRef.current = undefined;
       }
       if (numberElement) {
-        numberElement.style.transform =
-          "translateY(0.25rem) scale(1) rotate(0deg)";
-        numberElement.style.transition = "";
+        resetTransform();
       }
+      startRef.current = 0;
     };
   }, [isHighlighted, isOpened]);
 
@@ -209,18 +224,18 @@ export function GiftBox({
                 <GiftBoxWiggle
                   src="/images/giftbox.png"
                   alt="Gift box"
-                  className="w-full h-full object-contain"
-                  scale={1.2}
-                  maxRotate={15}
-                  duration={1000}
+                  className="w-full h-full object-contain transition-opacity duration-300"
+                  scale={WIGGLE_SCALE}
+                  maxRotate={WIGGLE_MAX_ROTATE}
+                  duration={WIGGLE_DURATION}
                 />
               ) : (
-                <Image
+                <img
                   src="/images/giftbox.png"
                   alt="Gift box"
                   width={160}
                   height={160}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain transition-opacity duration-300"
                 />
               )}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
@@ -267,7 +282,7 @@ export function GiftBox({
           <DialogDescription className="sr-only">
             Bạn đã khám phá chủ đề: {topic.title}
           </DialogDescription>
-          {topic.questions && topic.questions.length > 0 && (
+          {topic.questions?.length > 0 && (
             <div
               className={cn(
                 "rounded-xl p-6 sm:p-8 md:p-10 border-2 w-full animate-slide-up space-y-4"

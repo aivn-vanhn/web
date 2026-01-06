@@ -11,6 +11,9 @@ interface GiftBoxWiggleProps {
   duration?: number;
 }
 
+const TRANSITION_DURATION = "0.3s";
+const RESET_TRANSFORM = "scale(1) rotate(0deg)";
+
 export function GiftBoxWiggle({
   src,
   alt,
@@ -27,13 +30,21 @@ export function GiftBoxWiggle({
     const imgElement = imgRef.current;
     if (!imgElement) return;
 
+    const resetTransform = () => {
+      imgElement.style.transition = `transform ${TRANSITION_DURATION} ease-out`;
+      imgElement.style.transform = RESET_TRANSFORM;
+    };
+
     const animate = (time: number) => {
-      if (!startRef.current) startRef.current = time;
+      if (startRef.current === 0) {
+        startRef.current = time;
+      }
       const elapsed = time - startRef.current;
 
       if (elapsed >= duration) {
-        imgElement.style.transform = "scale(1) rotate(0deg)";
-        imgElement.style.transition = "transform 0.2s ease-out";
+        resetTransform();
+        frameRef.current = undefined;
+        startRef.current = 0;
         return;
       }
 
@@ -41,22 +52,24 @@ export function GiftBoxWiggle({
       const deg = Math.sin(elapsed / 80) * maxRotate * (1 - progress);
       const sc =
         1 + Math.sin(elapsed / 100) * (scale - 1) * 0.3 * (1 - progress);
-      imgElement.style.transform = `scale(${sc}) rotate(${deg}deg)`;
-      imgElement.style.transition = "none";
 
+      imgElement.style.transition = "none";
+      imgElement.style.transform = `scale(${sc}) rotate(${deg}deg)`;
       frameRef.current = requestAnimationFrame(animate);
     };
 
+    startRef.current = 0;
     frameRef.current = requestAnimationFrame(animate);
 
     return () => {
-      if (frameRef.current) {
+      if (frameRef.current !== undefined) {
         cancelAnimationFrame(frameRef.current);
+        frameRef.current = undefined;
       }
       if (imgElement) {
-        imgElement.style.transform = "scale(1) rotate(0deg)";
-        imgElement.style.transition = "";
+        resetTransform();
       }
+      startRef.current = 0;
     };
   }, [scale, maxRotate, duration]);
 
