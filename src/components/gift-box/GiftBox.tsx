@@ -13,14 +13,12 @@ import {
 import { GiftBoxWiggle } from "./GiftBoxWiggle";
 import { useEffect, useRef } from "react";
 
-// Calculate grid position from index
 function getGridPosition(index: number, cols: number) {
   const row = Math.floor(index / cols);
   const col = index % cols;
   return { row, col };
 }
 
-// Calculate pixel position from grid position
 function getPixelPosition(
   row: number,
   col: number,
@@ -41,6 +39,7 @@ interface GiftBoxProps {
   currentIndex: number;
   isShuffling: boolean;
   isHighlighted?: boolean;
+  boxNumber: number;
   onClick: () => void;
 }
 
@@ -52,9 +51,13 @@ export function GiftBox({
   currentIndex,
   isShuffling,
   isHighlighted = false,
+  boxNumber,
   onClick,
 }: GiftBoxProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const numberRef = useRef<HTMLSpanElement>(null);
+  const frameRef = useRef<number | undefined>(undefined);
+  const startRef = useRef<number>(0);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -116,6 +119,60 @@ export function GiftBox({
     }
   }, [initialIndex, currentIndex, isShuffling]);
 
+  useEffect(() => {
+    const numberElement = numberRef.current;
+    if (!numberElement || !isHighlighted || isOpened) {
+      if (frameRef.current) {
+        cancelAnimationFrame(frameRef.current);
+      }
+      if (numberElement) {
+        numberElement.style.transform =
+          "translateY(0.25rem) scale(1) rotate(0deg)";
+        numberElement.style.transition = "";
+      }
+      return;
+    }
+
+    const duration = 1000;
+    const maxRotate = 15;
+    const scale = 1.2;
+
+    const animate = (time: number) => {
+      if (!startRef.current) startRef.current = time;
+      const elapsed = time - startRef.current;
+
+      if (elapsed >= duration) {
+        numberElement.style.transform =
+          "translateY(0.25rem) scale(1) rotate(0deg)";
+        numberElement.style.transition = "transform 0.2s ease-out";
+        return;
+      }
+
+      const progress = elapsed / duration;
+      const deg = Math.sin(elapsed / 80) * maxRotate * (1 - progress);
+      const sc =
+        1 + Math.sin(elapsed / 100) * (scale - 1) * 0.3 * (1 - progress);
+      numberElement.style.transform = `translateY(0.25rem) scale(${sc}) rotate(${deg}deg)`;
+      numberElement.style.transition = "none";
+
+      frameRef.current = requestAnimationFrame(animate);
+    };
+
+    startRef.current = 0;
+    frameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (frameRef.current) {
+        cancelAnimationFrame(frameRef.current);
+      }
+      if (numberElement) {
+        numberElement.style.transform =
+          "translateY(0.25rem) scale(1) rotate(0deg)";
+        numberElement.style.transition = "";
+      }
+    };
+  }, [isHighlighted, isOpened]);
+
   if (!topic || !topic.theme) return null;
 
   return (
@@ -166,6 +223,17 @@ export function GiftBox({
                   className="w-full h-full object-contain"
                 />
               )}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                <span
+                  ref={numberRef}
+                  className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
+                  style={{
+                    transform: "translateY(0.25rem) scale(1) rotate(0deg)",
+                  }}
+                >
+                  {boxNumber}
+                </span>
+              </div>
             </div>
 
             {isOpened && (

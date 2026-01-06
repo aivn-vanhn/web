@@ -342,7 +342,6 @@ export default function ToolsPage() {
     setHighlightedBoxId(null);
     cleanupInterval();
     cleanupHighlightTimeout();
-    // Note: Reset does NOT exit fullscreen
   }, [cleanupInterval, cleanupHighlightTimeout, initializeTopics]);
 
   const handleToggleFullscreen = useCallback(async () => {
@@ -369,116 +368,135 @@ export default function ToolsPage() {
     <div className="min-h-screen bg-[url('/images/background.png')] bg-cover bg-center py-4 px-4 sm:py-6 md:py-4 md:px-6 lg:px-8 relative">
       <div className="relative z-10">
         <div className="relative z-20">
-          <div className="absolute left-0 top-0 pt-4 sm:pt-5 md:pt-4 lg:pt-6 z-30">
-            <img
-              src="/images/examdee.png"
-              alt="Examdee Logo"
-              className="h-6 sm:h-8 md:h-9 lg:h-12 w-auto object-contain ml-4 sm:ml-6 md:ml-6 lg:ml-8"
-            />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 pt-4 sm:pt-5 md:pt-4 lg:pt-6 z-30 flex flex-row items-center gap-6 sm:gap-8 md:gap-10 lg:gap-12 xl:gap-14">
+            <div className="flex flex-col items-center gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+              <img
+                src="/images/logo_so.png"
+                alt="Sở Giáo dục Logo"
+                className="h-12 sm:h-16 md:h-20 lg:h-24 w-auto object-contain"
+              />
+              <img
+                src="/images/examdee.png"
+                alt="Examdee Logo"
+                className="h-6 sm:h-8 md:h-12 lg:h-12 w-auto object-contain"
+              />
+            </div>
+            <div className="flex flex-col items-center gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+              <img
+                src="/images/logo_bm.png"
+                alt="Binh Minh Logo"
+                className="h-12 sm:h-16 md:h-20 lg:h-24 w-auto object-contain"
+              />
+              <img
+                src="/images/aivn_logo.svg"
+                alt="AIVN Logo"
+                className="h-6 sm:h-7 md:h-11 lg:h-10 w-auto object-contain"
+              />
+            </div>
           </div>
-          <div className="absolute right-0 top-0 pt-4 sm:pt-5 md:pt-4 lg:pt-6 z-30 mr-4 sm:mr-6 md:mr-6 lg:mr-8 flex items-center gap-3 sm:gap-4">
-            <img
-              src="/images/aivn_logo.svg"
-              alt="AIVN Logo"
-              className="h-6 sm:h-7 md:h-8 lg:h-10 w-auto object-contain"
-            />
-            <div ref={menuRef} className="relative">
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="p-2 sm:p-2.5 rounded-lg bg-white/15 hover:bg-white/25 transition-colors"
-                aria-label="Menu"
-              >
-                <DotsThreeVerticalIcon
-                  className="w-5 h-5 sm:w-6 sm:h-6 text-white"
-                  weight="bold"
-                />
-              </button>
-              {isMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 sm:w-56 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50">
-                  {!hasStarted ? (
+          <div
+            ref={menuRef}
+            className="absolute top-4 sm:top-5 md:top-4 lg:top-6 right-4 sm:right-6 md:right-6 lg:right-8 z-30"
+          >
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-2 sm:p-2.5 rounded-lg bg-white/15 hover:bg-white/25 transition-colors"
+              aria-label="Menu"
+            >
+              <DotsThreeVerticalIcon
+                className="w-5 h-5 sm:w-6 sm:h-6 text-white"
+                weight="bold"
+              />
+            </button>
+            {isMenuOpen && (
+              <div className="absolute right-0 mt-2 w-48 sm:w-56 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50">
+                {!hasStarted ? (
+                  <button
+                    onClick={() => {
+                      handleStart();
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full px-5 py-3 text-left hover:bg-gray-50 flex items-center gap-3 text-gray-900 font-semibold text-base sm:text-lg"
+                  >
+                    <RocketLaunchIcon
+                      className="w-5 h-5 sm:w-6 sm:h-6"
+                      weight="bold"
+                    />
+                    <span>Bắt đầu</span>
+                  </button>
+                ) : (
+                  <>
                     <button
                       onClick={() => {
-                        handleStart();
+                        handleUndo();
                         setIsMenuOpen(false);
                       }}
-                      className="w-full px-5 py-3 text-left hover:bg-gray-50 flex items-center gap-3 text-gray-900 font-semibold text-base sm:text-lg"
+                      disabled={selectedCount === 0}
+                      className="w-full px-5 py-3 text-left hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 text-gray-900 font-semibold text-base sm:text-lg"
                     >
-                      <RocketLaunchIcon
+                      <ArrowUUpLeftIcon
                         className="w-5 h-5 sm:w-6 sm:h-6"
                         weight="bold"
                       />
-                      <span>Bắt đầu</span>
+                      <span>Hoàn tác</span>
                     </button>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => {
-                          handleUndo();
-                          setIsMenuOpen(false);
-                        }}
-                        disabled={selectedCount === 0}
-                        className="w-full px-5 py-3 text-left hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 text-gray-900 font-semibold text-base sm:text-lg"
-                      >
-                        <ArrowUUpLeftIcon
+                    <button
+                      onClick={() => {
+                        handleReset();
+                        setIsMenuOpen(false);
+                      }}
+                      disabled={isShuffling}
+                      className="w-full px-5 py-3 text-left hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 text-gray-900 font-semibold text-base sm:text-lg border-t border-gray-200"
+                    >
+                      <ArrowsClockwiseIcon
+                        className="w-5 h-5 sm:w-6 sm:h-6"
+                        weight="bold"
+                      />
+                      <span>Đặt lại</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleToggleFullscreen();
+                        setIsMenuOpen(false);
+                      }}
+                      disabled={isShuffling}
+                      className="w-full px-5 py-3 text-left hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 text-gray-900 font-semibold text-base sm:text-lg border-t border-gray-200"
+                    >
+                      {isFullscreen ? (
+                        <ArrowsInIcon
                           className="w-5 h-5 sm:w-6 sm:h-6"
                           weight="bold"
                         />
-                        <span>Hoàn tác</span>
-                      </button>
-                      <button
-                        onClick={() => {
-                          handleReset();
-                          setIsMenuOpen(false);
-                        }}
-                        disabled={isShuffling}
-                        className="w-full px-5 py-3 text-left hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 text-gray-900 font-semibold text-base sm:text-lg border-t border-gray-200"
-                      >
-                        <ArrowsClockwiseIcon
+                      ) : (
+                        <ArrowsOutIcon
                           className="w-5 h-5 sm:w-6 sm:h-6"
                           weight="bold"
                         />
-                        <span>Đặt lại</span>
-                      </button>
-                      <button
-                        onClick={() => {
-                          handleToggleFullscreen();
-                          setIsMenuOpen(false);
-                        }}
-                        disabled={isShuffling}
-                        className="w-full px-5 py-3 text-left hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 text-gray-900 font-semibold text-base sm:text-lg border-t border-gray-200"
-                      >
-                        {isFullscreen ? (
-                          <ArrowsInIcon
-                            className="w-5 h-5 sm:w-6 sm:h-6"
-                            weight="bold"
-                          />
-                        ) : (
-                          <ArrowsOutIcon
-                            className="w-5 h-5 sm:w-6 sm:h-6"
-                            weight="bold"
-                          />
-                        )}
-                        <span>
-                          {isFullscreen
-                            ? "Thoát toàn màn hình"
-                            : "Toàn màn hình"}
-                        </span>
-                      </button>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
+                      )}
+                      <span>
+                        {isFullscreen ? "Thoát toàn màn hình" : "Toàn màn hình"}
+                      </span>
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-10 sm:mb-12 md:mb-14 pt-20 sm:pt-24 md:pt-22 lg:pt-24">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-extrabold text-white mb-5 sm:mb-6 md:mb-7 drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)] whitespace-nowrap leading-normal">
-              BỐC THĂM CHỦ ĐỀ THUYẾT TRÌNH
+          <div className="text-center mb-6 sm:mb-8 md:mb-10 lg:mb-12 pt-20 sm:pt-24 md:pt-48 lg:pt-52 xl:pt-56">
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold text-white mb-2 sm:mb-3 md:mb-4 lg:mb-5 drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] whitespace-nowrap leading-normal px-4 sm:px-6 md:px-8">
+              BỐC THĂM CHỦ ĐỀ PHẦN 3: PLEASE SPEAK - THUYẾT TRÌNH TIẾNG ANH
+            </p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-white mb-1.5 sm:mb-2 md:mb-3 lg:mb-4 drop-shadow-[0_5px_15px_rgba(0,0,0,0.9)] whitespace-nowrap leading-normal px-4 sm:px-6 md:px-8">
+              Ngày hội Tiếng Anh STEM Robotics
             </h1>
-            <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl text-white mb-10 sm:mb-12 md:mb-14 font-bold drop-shadow-[0_2px_6px_rgba(0,0,0,0.3)]">
-              PLEASE SPEAK - THUYẾT TRÌNH TIẾNG ANH
+            <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-white mb-1.5 sm:mb-2 md:mb-3 lg:mb-4 drop-shadow-[0_4px_10px_rgba(0,0,0,0.8)] whitespace-nowrap leading-normal px-4 sm:px-6 md:px-8">
+              CẤP TIỂU HỌC, NĂM HỌC 2025 - 2026
+            </p>
+            <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-white mb-6 sm:mb-8 md:mb-6 lg:mb-12 drop-shadow-[0_4px_10px_rgba(0,0,0,0.8)] whitespace-nowrap leading-normal px-4 sm:px-6 md:px-8">
+              VÒNG CHUNG KHẢO
             </p>
             {!hasStarted && (
               <Button
@@ -497,7 +515,7 @@ export default function ToolsPage() {
           </div>
 
           {hasStarted && hasValidTopics && (
-            <div className="relative grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-5 md:gap-6 lg:gap-8">
+            <div className="relative grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-2.5 md:gap-3 lg:gap-4">
               {topics.map((topic) => (
                 <GiftBox
                   key={topic.id}
@@ -508,6 +526,7 @@ export default function ToolsPage() {
                   currentIndex={topic.currentIndex}
                   isShuffling={isShuffling}
                   isHighlighted={highlightedBoxId === topic.id}
+                  boxNumber={topic.initialIndex + 1}
                   onClick={() => handleBoxClick(topic)}
                 />
               ))}
