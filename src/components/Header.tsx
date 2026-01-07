@@ -47,11 +47,12 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <div className="relative w-40 h-12">
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-400/20 via-orange-500/30 to-orange-400/20 blur-xl rounded-lg animate-pulse"></div>
               <Image
                 src="/images/logo (1).svg"
                 alt="AI Vietnam Logo"
                 fill
-                className="object-contain"
+                className="object-contain relative z-10 drop-shadow-lg"
                 priority
               />
             </div>

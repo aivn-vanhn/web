@@ -10,7 +10,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { GiftBoxWiggle } from "./GiftBoxWiggle";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import Lottie from "lottie-react";
 
 function getGridPosition(index: number, cols: number) {
   const row = Math.floor(index / cols);
@@ -63,6 +64,13 @@ export function GiftBox({
   const WIGGLE_DURATION = 1000;
   const WIGGLE_MAX_ROTATE = 15;
   const WIGGLE_SCALE = 1.2;
+  const LOADING_DURATION = 2500;
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [loadingAnimationData, setLoadingAnimationData] = useState<
+    object | null
+  >(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -188,10 +196,29 @@ export function GiftBox({
     };
   }, [isHighlighted, isOpened]);
 
+  useEffect(() => {
+    fetch("/lottie/loading.json")
+      .then((res) => res.json())
+      .then((data) => setLoadingAnimationData(data))
+      .catch((err) => console.error("Failed to load loading animation:", err));
+  }, []);
+
+  useEffect(() => {
+    if (isDialogOpen) {
+      setIsLoading(true);
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, LOADING_DURATION);
+      return () => clearTimeout(timer);
+    } else {
+      setIsLoading(false);
+    }
+  }, [isDialogOpen]);
+
   if (!topic || !topic.theme) return null;
 
   return (
-    <Dialog>
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <div
         ref={containerRef}
         className={cn(
@@ -274,32 +301,56 @@ export function GiftBox({
         </DialogTrigger>
       </div>
 
-      <DialogContent className="max-w-3xl animate-modal-zoom-in">
-        <div className="relative flex flex-col items-center justify-center p-8 sm:p-10 md:p-12 bg-white">
-          <DialogTitle className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-6 sm:mb-8 text-center animate-slide-up drop-shadow-md">
-            {topic.title}
-          </DialogTitle>
-          <DialogDescription className="sr-only">
-            Bạn đã khám phá chủ đề: {topic.title}
-          </DialogDescription>
-          {topic.questions?.length > 0 && (
-            <div
-              className={cn(
-                "rounded-xl p-6 sm:p-8 md:p-10 border-2 w-full animate-slide-up space-y-4"
+      <DialogContent className="max-w-3xl animate-modal-zoom-in flex flex-col items-center">
+        <DialogTitle className="sr-only">
+          {isLoading ? "Đang khám phá chủ đề bí mật" : topic.title}
+        </DialogTitle>
+        <DialogDescription className="sr-only">
+          {isLoading
+            ? "Đang tải nội dung hộp quà"
+            : `Bạn đã khám phá chủ đề: ${topic.title}`}
+        </DialogDescription>
+        <div className="relative flex flex-col items-center justify-center p-8 sm:p-10 md:p-12 bg-white min-h-[400px] w-full">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center gap-2 w-full">
+              {loadingAnimationData && (
+                <div className="w-80 h-80 sm:w-96 sm:h-96 md:w-[28rem] md:h-[28rem]">
+                  <Lottie
+                    animationData={loadingAnimationData}
+                    loop={true}
+                    className="w-full h-full"
+                  />
+                </div>
               )}
-              style={{
-                backgroundImage: `linear-gradient(to bottom right, ${topic.theme.gradientFrom}, ${topic.theme.gradientTo})`,
-                borderColor: topic.theme.border,
-              }}
-            >
-              {topic.questions.map((question, index) => (
-                <p
-                  key={index}
-                  className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-800 leading-relaxed text-center"
+              <p className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-600 animate-pulse text-center">
+                Đang khám phá chủ đề...
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center w-full gap-6">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 text-center animate-slide-up drop-shadow-md">
+                {topic.title}
+              </h2>
+              {topic.questions?.length > 0 && (
+                <div
+                  className={cn(
+                    "rounded-xl p-6 sm:p-8 md:p-10 border-2 w-full max-w-2xl animate-slide-up space-y-4"
+                  )}
+                  style={{
+                    backgroundImage: `linear-gradient(to bottom right, ${topic.theme.gradientFrom}, ${topic.theme.gradientTo})`,
+                    borderColor: topic.theme.border,
+                  }}
                 >
-                  {question}
-                </p>
-              ))}
+                  {topic.questions.map((question, index) => (
+                    <p
+                      key={index}
+                      className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-800 leading-relaxed text-center"
+                    >
+                      {question}
+                    </p>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
