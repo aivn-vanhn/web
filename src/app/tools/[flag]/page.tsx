@@ -41,15 +41,6 @@ type TopicWithSelected = Topic & {
   currentIndex: number;
 };
 
-function shuffleArray<T>(array: T[]): T[] {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
-}
-
 function NotFoundPage() {
   const router = useRouter();
 
@@ -223,10 +214,7 @@ export default function ToolsPage() {
     setTopics(topicsWithIndexes);
     setHasStarted(true);
 
-    // Enter fullscreen first, then wait for layout to stabilize before starting shuffle
     await enterFullscreen();
-
-    // Wait for fullscreen transition and layout recalculation to complete
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     setIsShuffling(true);
@@ -239,28 +227,28 @@ export default function ToolsPage() {
       const isLastShuffle = shuffleCount >= SHUFFLE_STEPS;
 
       setTopics((prev) => {
-        const shuffled = shuffleArray(prev);
-        const newPositionMap = new Map(
-          shuffled.map((topic, index) => [topic.id, index])
-        );
-
-        const updated = prev.map((topic) => ({
-          ...topic,
-          selected: false,
-          currentIndex: newPositionMap.get(topic.id) ?? topic.currentIndex,
-        }));
-
         if (isLastShuffle) {
-          const sorted = [...updated].sort(
-            (a, b) => a.currentIndex - b.currentIndex
-          );
-          return sorted.map((topic, index) => ({
+          return prev.map((topic) => ({
             ...topic,
-            initialIndex: index,
+            selected: false,
+            currentIndex: topic.initialIndex,
           }));
         }
 
-        return updated;
+        const shuffledIndices = prev.map((_, i) => i);
+        for (let i = shuffledIndices.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffledIndices[i], shuffledIndices[j]] = [
+            shuffledIndices[j],
+            shuffledIndices[i],
+          ];
+        }
+
+        return prev.map((topic) => ({
+          ...topic,
+          selected: false,
+          currentIndex: shuffledIndices[topic.initialIndex],
+        }));
       });
 
       if (isLastShuffle) {
@@ -317,25 +305,11 @@ export default function ToolsPage() {
       if (selectedTopics.length === 0) return prev;
 
       const lastSelectedTopic = selectedTopics[selectedTopics.length - 1];
-      const unselectedTopics = prev
-        .filter((t) => !t.selected)
-        .concat({ ...lastSelectedTopic, selected: false });
-
-      const shuffledUnselected = shuffleArray(unselectedTopics);
-      let shuffledIndex = 0;
-
-      return prev.map((topic, index) => {
-        if (topic.selected && topic.id !== lastSelectedTopic.id) {
-          return { ...topic, currentIndex: index };
-        }
-        if (shuffledIndex < shuffledUnselected.length) {
-          return {
-            ...shuffledUnselected[shuffledIndex++],
-            currentIndex: index,
-          };
-        }
-        return topic;
-      });
+      return prev.map((topic) =>
+        topic.id === lastSelectedTopic.id
+          ? { ...topic, selected: false }
+          : topic
+      );
     });
   }, []);
 

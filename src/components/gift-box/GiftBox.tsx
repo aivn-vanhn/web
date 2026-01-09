@@ -12,6 +12,7 @@ import {
 import { GiftBoxWiggle } from "./GiftBoxWiggle";
 import { useEffect, useRef, useState } from "react";
 import Lottie from "lottie-react";
+import { AwesomeSchoolPride } from "@/components/ui/AwesomeSchoolPride";
 
 function getGridPosition(index: number, cols: number) {
   const row = Math.floor(index / cols);
@@ -68,6 +69,7 @@ export function GiftBox({
 
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [playFirework, setPlayFirework] = useState(false);
   const [loadingAnimationData, setLoadingAnimationData] = useState<
     object | null
   >(null);
@@ -208,153 +210,185 @@ export function GiftBox({
       setIsLoading(true);
       const timer = setTimeout(() => {
         setIsLoading(false);
+        // Bắt đầu hiệu ứng pháo hoa sau khi loading xong
+        setPlayFirework(true);
       }, LOADING_DURATION);
-      return () => clearTimeout(timer);
+
+      // Dọn dẹp khi dialog đóng hoặc component unmount
+      return () => {
+        clearTimeout(timer);
+        setPlayFirework(false);
+      };
     } else {
       setIsLoading(false);
+      setPlayFirework(false);
     }
   }, [isDialogOpen]);
+
+  // Quản lý thời gian dừng hiệu ứng pháo hoa
+  useEffect(() => {
+    if (playFirework) {
+      const stopTimer = setTimeout(() => {
+        setPlayFirework(false);
+      }, 8000);
+      return () => clearTimeout(stopTimer);
+    }
+  }, [playFirework]);
 
   if (!topic || !topic.theme) return null;
 
   return (
-    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-      <div
-        ref={containerRef}
-        className={cn(
-          "relative flex items-center justify-center",
-          isShuffling && "z-10"
-        )}
-        style={{
-          order: currentIndex,
-        }}
-      >
-        <DialogTrigger asChild>
-          <button
-            onClick={onClick}
-            disabled={!isStarted || isOpened}
-            className={cn(
-              "relative w-full aspect-square max-w-[100px] sm:max-w-[120px] md:max-w-[130px] lg:max-w-[150px] mx-auto",
-              (!isStarted || isOpened) && "opacity-60 cursor-default",
-              isStarted &&
-                !isOpened &&
-                "hover:scale-110 active:scale-95 cursor-pointer"
-            )}
-          >
-            <div
+    <>
+      {playFirework && (
+        <AwesomeSchoolPride
+          isPlaying={playFirework}
+          colors={["#fbbf24", "#f97316", "#22d3ee", "#a855f7"]}
+          particleCount={4}
+          spread={65}
+          scale={0.9}
+          duration={1000}
+          className="pointer-events-none fixed inset-0"
+          zIndex={9999}
+        />
+      )}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <div
+          ref={containerRef}
+          className={cn(
+            "relative flex items-center justify-center",
+            isShuffling && "z-10"
+          )}
+          style={{
+            order: currentIndex,
+          }}
+        >
+          <DialogTrigger asChild>
+            <button
+              onClick={onClick}
+              disabled={!isStarted || isOpened}
               className={cn(
-                "relative w-full h-full flex items-center justify-center",
-                isOpened && "opacity-50 grayscale"
+                "relative w-full aspect-square max-w-[100px] sm:max-w-[120px] md:max-w-[130px] lg:max-w-[150px] mx-auto",
+                (!isStarted || isOpened) && "opacity-60 cursor-default",
+                isStarted &&
+                  !isOpened &&
+                  "hover:scale-110 active:scale-95 cursor-pointer"
               )}
             >
-              {isHighlighted && !isOpened ? (
-                <GiftBoxWiggle
-                  src="/images/giftbox.png"
-                  alt="Gift box"
-                  className="w-full h-full object-contain transition-opacity duration-300"
-                  scale={WIGGLE_SCALE}
-                  maxRotate={WIGGLE_MAX_ROTATE}
-                  duration={WIGGLE_DURATION}
-                />
-              ) : (
-                <img
-                  src="/images/giftbox.png"
-                  alt="Gift box"
-                  width={160}
-                  height={160}
-                  className="w-full h-full object-contain transition-opacity duration-300"
-                />
-              )}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                <span
-                  ref={numberRef}
-                  className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
-                  style={{
-                    transform: "translateY(0.25rem) scale(1) rotate(0deg)",
-                  }}
-                >
-                  {boxNumber}
-                </span>
-              </div>
-            </div>
-
-            {isOpened && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-                <div className="bg-black/30 rounded-full p-2 animate-zoom-in">
-                  <svg
-                    className="w-12 h-12 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+              <div
+                className={cn(
+                  "relative w-full h-full flex items-center justify-center",
+                  isOpened && "opacity-50 grayscale"
+                )}
+              >
+                {isHighlighted && !isOpened ? (
+                  <GiftBoxWiggle
+                    src="/images/giftbox.png"
+                    alt="Gift box"
+                    className="w-full h-full object-contain transition-opacity duration-300"
+                    scale={WIGGLE_SCALE}
+                    maxRotate={WIGGLE_MAX_ROTATE}
+                    duration={WIGGLE_DURATION}
+                  />
+                ) : (
+                  <img
+                    src="/images/giftbox.png"
+                    alt="Gift box"
+                    width={160}
+                    height={160}
+                    className="w-full h-full object-contain transition-opacity duration-300"
+                  />
+                )}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                  <span
+                    ref={numberRef}
+                    className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
+                    style={{
+                      transform: "translateY(0.25rem) scale(1) rotate(0deg)",
+                    }}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={3}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
+                    {boxNumber}
+                  </span>
                 </div>
+              </div>
+
+              {isOpened && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+                  <div className="bg-black/30 rounded-full p-2 animate-zoom-in">
+                    <svg
+                      className="w-12 h-12 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={3}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              )}
+            </button>
+          </DialogTrigger>
+        </div>
+
+        <DialogContent className="max-w-3xl animate-modal-zoom-in flex flex-col items-center">
+          <DialogTitle className="sr-only">
+            {isLoading ? "Đang khám phá chủ đề bí mật" : topic.title}
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            {isLoading
+              ? "Đang tải nội dung hộp quà"
+              : `Bạn đã khám phá chủ đề: ${topic.title}`}
+          </DialogDescription>
+          <div className="relative flex flex-col items-center justify-center p-8 sm:p-10 md:p-12 bg-white min-h-[400px] w-full">
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center gap-2 w-full">
+                {loadingAnimationData && (
+                  <div className="w-80 h-80 sm:w-96 sm:h-96 md:w-[28rem] md:h-[28rem]">
+                    <Lottie
+                      animationData={loadingAnimationData}
+                      loop={true}
+                      className="w-full h-full"
+                    />
+                  </div>
+                )}
+                <p className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-600 animate-pulse text-center">
+                  Đang khám phá chủ đề...
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center w-full gap-6">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 text-center animate-slide-up drop-shadow-md">
+                  {topic.title}
+                </h2>
+                {topic.questions?.length > 0 && (
+                  <div
+                    className={cn(
+                      "rounded-xl p-6 sm:p-8 md:p-10 border-2 w-full max-w-2xl animate-slide-up space-y-4"
+                    )}
+                    style={{
+                      backgroundImage: `linear-gradient(to bottom right, ${topic.theme.gradientFrom}, ${topic.theme.gradientTo})`,
+                      borderColor: topic.theme.border,
+                    }}
+                  >
+                    {topic.questions.map((question, index) => (
+                      <p
+                        key={index}
+                        className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-800 leading-relaxed text-center"
+                      >
+                        {question}
+                      </p>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
-          </button>
-        </DialogTrigger>
-      </div>
-
-      <DialogContent className="max-w-3xl animate-modal-zoom-in flex flex-col items-center">
-        <DialogTitle className="sr-only">
-          {isLoading ? "Đang khám phá chủ đề bí mật" : topic.title}
-        </DialogTitle>
-        <DialogDescription className="sr-only">
-          {isLoading
-            ? "Đang tải nội dung hộp quà"
-            : `Bạn đã khám phá chủ đề: ${topic.title}`}
-        </DialogDescription>
-        <div className="relative flex flex-col items-center justify-center p-8 sm:p-10 md:p-12 bg-white min-h-[400px] w-full">
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center gap-2 w-full">
-              {loadingAnimationData && (
-                <div className="w-80 h-80 sm:w-96 sm:h-96 md:w-[28rem] md:h-[28rem]">
-                  <Lottie
-                    animationData={loadingAnimationData}
-                    loop={true}
-                    className="w-full h-full"
-                  />
-                </div>
-              )}
-              <p className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-600 animate-pulse text-center">
-                Đang khám phá chủ đề...
-              </p>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center w-full gap-6">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 text-center animate-slide-up drop-shadow-md">
-                {topic.title}
-              </h2>
-              {topic.questions?.length > 0 && (
-                <div
-                  className={cn(
-                    "rounded-xl p-6 sm:p-8 md:p-10 border-2 w-full max-w-2xl animate-slide-up space-y-4"
-                  )}
-                  style={{
-                    backgroundImage: `linear-gradient(to bottom right, ${topic.theme.gradientFrom}, ${topic.theme.gradientTo})`,
-                    borderColor: topic.theme.border,
-                  }}
-                >
-                  {topic.questions.map((question, index) => (
-                    <p
-                      key={index}
-                      className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-800 leading-relaxed text-center"
-                    >
-                      {question}
-                    </p>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

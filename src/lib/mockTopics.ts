@@ -64,7 +64,7 @@ export const MOCK_TOPICS: Topic[] = [
     id: "1092115f-1230-482c-b9da-a8878be480cf",
     title: "E-Learning",
     questions: [
-      "Which method of learning is helpful for students, online or in-person classes?",
+      "Which method of learning is more helpful for students, online or in-person classes?",
     ],
     theme: {
       primary: "#06B6D4",
@@ -153,7 +153,7 @@ export const MOCK_TOPICS: Topic[] = [
   {
     id: "84e549c2-5c1a-4089-b363-d7e2f3516ce1",
     title: "Music",
-    questions: ["Tell about studying music at school."],
+    questions: ["Talk about your studying music at school."],
     theme: {
       primary: "#06B6D4",
       secondary: "#0891B2",
